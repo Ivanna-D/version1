@@ -1,0 +1,67 @@
+import hvplot.pandas
+import numpy as np
+from js import console
+from pyodide_http import patch_all
+
+import pandas as pd
+import panel as pn
+
+patch_all()
+
+#Variables
+start_limit = 0
+x_0 = start_limit
+end_limit= 100
+step_ = 1
+x_1 = end_limit
+print(x_0, x_1)
+
+#Importing data
+csv_file = "https://raw.githubusercontent.com/Ivanna-D/data/51d9d84c9cb4bb6e50c183a9364ae9ff6808e124/data_test.csv"
+data = pd.read_csv(csv_file, skiprows = x_0)
+console.log("Downloaded data")
+
+pn.extension()
+
+#Functions
+def fun(x):
+    return x**2
+
+def callback(new):
+    x_0 = new[0]
+    x_1 = new[1]
+    return f'x0 = {x_0}, x1 = {x_1}' 
+
+def update_plot(event):
+    if not event: return 
+    '''   
+    csv_file = "https://raw.githubusercontent.com/Ivanna-D/data/51d9d84c9cb4bb6e50c183a9364ae9ff6808e124/data_test.csv"
+    data = pd.read_csv(csv_file)
+    new_data = []
+    for i in range(100):
+        if  x_1 >= data[i][0] >= x_0:
+            new_data.append(data[i])
+    plot1 = new_data.hvplot.line(x = 'x', y = 'y', width = 360, height = 900)
+    pn.Row(plot1).servable(target='panel')
+     '''
+
+
+#Panel widgets
+range_slider = pn.widgets.RangeSlider(
+    name = 'Range Slider',
+    start = start_limit, 
+    end = end_limit,
+    #value = (0, 100),
+    step = step_
+)
+new_button = pn.widgets.Button(name='Update plot', button_type='primary')
+plot1 = data.hvplot.line(x = 'x', y = 'y', width = 360, height = 900)
+console.log("Set up widgets!")
+
+#Panel Widget
+slider = pn.Row(range_slider, pn.bind(callback, range_slider))
+button = pn.Row(new_button, pn.bind(update_plot, new_button, watch=False))
+
+new_button = pn.widgets.Button(name='Update plot', button_type='primary')
+
+pn.Column(slider, button, plot1).servable(target='panel')
